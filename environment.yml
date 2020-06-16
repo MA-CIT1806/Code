@@ -1,0 +1,41 @@
+name: ma_thesis
+
+dependencies:
+- scipy
+- numpy
+- scikit-learn
+- ipykernel
+- ipython
+- ipython_genutils
+- ipywidgets
+- jupyter
+- jupyter_client
+- jupyter_console
+- jupyter_core
+- notebook
+- pandas>=1.0.0
+- seaborn
+- pip
+- pytorch
+- tensorflow
+- torchvision
+- python>=3.6.0
+- pytz
+- pyzmq
+- pytest
+- dill
+- matplotlib
+- pip:
+  - pylint
+  - pygsp
+  - autopep8
+  - python-dateutil
+  - pytorch_metric_learning
+  - tensorboardX
+  - tensorboard
+  - pytorch-ignite>=0.3.0
+  - torch-scatter
+  - torch-sparse
+  - torch-cluster
+  - torch-spline-conv
+  - torch-geometric
