@@ -7,6 +7,8 @@ from ignite.contrib.handlers.tensorboard_logger import *
 
 
 def custom_global_step_from_engine(trainer, evaluator, evaluator_type, verbose=True, custom_print=None, loss_name="nll"):
+    """Customize the global-step from engine in order to get live-loggings during training."""
+
     def wrapper(_, event_name):
         if verbose:
             metrics = evaluator.state.metrics
@@ -42,6 +44,7 @@ def custom_global_step_from_engine(trainer, evaluator, evaluator_type, verbose=T
 
 
 def create_tb_logger(model, optimizer, trainer, train_evaluator, val_evaluator, test_evaluator, **kwargs):
+    """Creates a logger for tensorboard. Several logging-events and their freqeuncy are defined."""
 
     verbose = kwargs.get("verbose", True)
     custom_print = kwargs.get("custom_print", None)

@@ -48,9 +48,12 @@ class ClassificationPipeline():
         self.pred_list = []
         self.persist_pred = False
 
-        self.trained_model_checkpoint = kwargs.get("trained_model_checkpoint", None)
+        self.trained_model_checkpoint = kwargs.get(
+            "trained_model_checkpoint", None)
 
     def _prepare_metric_dict(self, metrics):
+        """Prepare a metric dict for tensorboard."""
+
         new_dict = dict()
         for key, value in metrics.items():
             if "cm" not in key:
@@ -59,6 +62,8 @@ class ClassificationPipeline():
         return new_dict
 
     def _prepare_hparam_dict(self, hparams):
+        """Prepare a hyperparameter dict for tensorboard."""
+
         new_dict = dict()
         for key, value in hparams.items():
             if isinstance(value, (float, int)):
@@ -67,10 +72,14 @@ class ClassificationPipeline():
         return new_dict
 
     def _pred_collector_function(self, pred):
+        """Collect predictions on test-set."""
+
         if self.persist_pred:
             self.pred_list.append(pred)
 
     def _get_collected_predictions(self, class_labels):
+        """Prepare collected predictions, determine predicted classes."""
+
         pred_labels_raw = np.concatenate(
             [pd.cpu().detach().numpy() for pd in self.pred_list], axis=0)
         pred_labels = np.array(
@@ -82,12 +91,15 @@ class ClassificationPipeline():
         return pred_labels, pred_labels_raw
 
     def _load_checkpoint(self, model, optimizer, checkpoint):
+        """Load a model from checkpoint."""
+
         model.load_state_dict(checkpoint['model_state_dict'], strict=False)
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
         return model, optimizer
 
     def _prepare_trained_model(self, model, optimizer):
+        """Load a model from checkpoint."""
 
         additional_parameters = None
 
@@ -158,6 +170,7 @@ class ClassificationPipeline():
         self.model = model
         self.optimizer = optimizer
 
+        # load model from checkpoint if available
         if self.trained_model_checkpoint is not None:
             self.custom_print("load transfer-learning checkpoint...")
             model, optimizer = self._prepare_trained_model(model, optimizer)
@@ -178,9 +191,12 @@ class ClassificationPipeline():
             }
         }
 
+        ## configure trainer ##
         trainer = create_supervised_trainer(
             model, optimizer, loss, device=device, extraction_target=extraction_target)
 
+        ###############################################
+        ## configure evaluators for each data source ##
         train_evaluator = create_supervised_evaluator(model,
                                                       **evaluator_settings)
 
@@ -192,11 +208,13 @@ class ClassificationPipeline():
         test_evaluator = create_supervised_evaluator(model,
                                                      **evaluator_settings)
 
+        # configure behavior for early stopping
         if early_stopping is not None:
             stopper = EarlyStopping(
                 patience=early_stopping, score_function=self.score_function, trainer=trainer)
             val_evaluator.add_event_handler(Events.COMPLETED, stopper)
 
+        # configure behavior for checkpoint saving
         if checkpoint_saving is not None:
             save_handler = None
             if self.test_mode and self.validation_mode:
@@ -226,6 +244,8 @@ class ClassificationPipeline():
 
         @trainer.on(Events.COMPLETED)
         def log_training_complete(trainer):
+            """Trigger evaluation on test set if training is completed."""
+
             epoch = trainer.state.epoch
             suffix = "(Early Stopping)" if epoch < epochs else ""
 
@@ -290,7 +310,7 @@ class ClassificationPipeline():
             tb_logger.writer.add_figure(
                 "test_cm",
                 create_confusion_matrix(
-                    y_pred, y_true, self.dataset.class_name_mapping.values())
+                    y_true, y_pred, self.dataset.class_name_mapping.values())
             )
 
             # add testset-embeddings
@@ -302,12 +322,16 @@ class ClassificationPipeline():
 
         @trainer.on(Events.EPOCH_COMPLETED)
         def compute_metrics(engine):
+            """Compute evaluation metric values after each epoch."""
+
             train_evaluator.run(train_loader)
 
             if self.validation_mode:
                 val_evaluator.run(val_loader)
 
+        # terminate training if Nan values are produced
         trainer.add_event_handler(Events.ITERATION_COMPLETED, TerminateOnNan())
+        
         # create tensorboard-logger
         tb_logger = create_tb_logger(model,
                                      optimizer,
@@ -336,6 +360,8 @@ class ClassificationPipeline():
         return test_acc, test_loss
 
     def custom_print(self, text):
+        """Redirect print-output to additional file."""
+
         print(text)
         with open('{}.txt'.format(self.unique_log_name), mode='a') as file_object:
             if isinstance(text, dict):
@@ -343,14 +369,19 @@ class ClassificationPipeline():
             print(text, file=file_object)
 
     def run(self, dataset_names, model_name, folds=5, test=True, validation=True, use_split_idx=None, verbose=True, wrapper=LeaveOneGroupOutWrapper):
+        """
+        Trains a model on provided data. It can be declared whether a train/test, train/validation or train/validation/test split is required.
+        """
 
         splitter = wrapper(self.dataset)
 
         self.test_mode = test
         self.validation_mode = validation
 
+        # setup a unique name for suffixes or prefixes in the process
         self.unique_log_name = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
+        # setup a directory for tensorboard-logs
         tb_log_dir = setup_tb_log_dir(
             self.unique_log_name, dataset_names, model_name)
 

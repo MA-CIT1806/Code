@@ -154,6 +154,7 @@ def transform_time_series_data(data_list, window_width=10, sliding_window=10, in
         
 
     for data in data_list:
+        # transpose if necessary
         for d in data:
             d.x = d.x.T if d.x.shape[0] > d.x.shape[1] else d.x 
         inner_data_list = []
@@ -168,6 +169,7 @@ def transform_time_series_data(data_list, window_width=10, sliding_window=10, in
                         
             indices = range(0, (arr.size(1) - window_width) + 1, sliding_window)       
 
+            # slide over the time series with the predefined window and extract slides of data
             for i in range(len(indices)):
                 new_arr = arr[:, indices[i]:indices[i]+window_width]
                 new_arr = torch.from_numpy(

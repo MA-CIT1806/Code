@@ -28,6 +28,8 @@ def chebyshev_polynomials(base, k, debug=False, kind=1):
 
 
 class LocalSaveHandler():
+    "Keeps an updated checkpoint of the best model internally. Checkpoint is not written to disk."
+
     def __init__(self, pipeline):
         self.pipeline = pipeline
 
@@ -48,6 +50,12 @@ class LocalSaveHandler():
 
 
 class CombinedLoss:
+    """
+    Loss function for representation learning. 
+    Multiple losses are utilized for the respective tasks.
+    In the end, the losses are linked additively.
+    """
+
     def __init__(self):
         self.loss = torch.nn.MSELoss()
         self.npair_loss = losses.NPairsLoss(l2_reg_weight=0.02)

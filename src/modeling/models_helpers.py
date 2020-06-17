@@ -55,6 +55,8 @@ node_probas = {
 }
 
 def extend_task1_indices(markers, indices, headers):
+    """Extend provided indices, such that all related nodes/indices are also added."""
+
     ext_indices = []
     for idx, i in enumerate(markers):
         corresponding_headers = headers[idx]
@@ -66,6 +68,8 @@ def extend_task1_indices(markers, indices, headers):
 
 
 def sample_indices(headers, device):
+    """Sampling indices for nodes. Incorporate the predefined node probabilities."""
+
     probas = list(node_probas.values())
     probas = [el / sum(probas) for el in probas]
     indices = np.random.choice(23, len(headers), p=probas)   
@@ -83,6 +87,11 @@ def sample_indices(headers, device):
     return torch.LongTensor(indices_list, device=device).reshape(-1, 1), node_names            
         
 def prepare_task_learning(x, next_possible_nodes, headers, edge_index, batch_size):
+    """
+    Prepare for task learning.
+    1) sample indices for nodes in the current graph to mask.
+    2) sample indices for nodes in the next graph to mask.
+    """
 
     markers = torch.arange(0, (batch_size*23), 23).reshape(batch_size, 1)
     

@@ -15,6 +15,7 @@ import torch_geometric.data as TGD
 
 
 class MultiAnomalyDataset(ConcatDataset):
+    """Wrapper for concatenating multiple data sets. Resolves indices and passes transforms to single data sets."""
     def __init__(self, datasets):
         super(MultiAnomalyDataset, self).__init__(datasets)
         
@@ -62,6 +63,7 @@ class MultiAnomalyDataset(ConcatDataset):
             
 
 class AnomalyDataset(Dataset):
+    """Base class for modeling an anomaly data set. Handles data loading and data transformations."""
 
     pattern = "(^[0-9]*)"
 
@@ -133,6 +135,8 @@ class AnomalyDataset(Dataset):
     
 #######################################    
 class AnomalySubset(Subset):
+    """Subset of an anomaly data set. Manages its share of the data and propagates other requests. Necessary for splitting of data."""
+
     def __init__(self, dataset, indices):
         super().__init__(dataset, indices)
         
@@ -160,6 +164,11 @@ class AnomalySubset(Subset):
 #######################################
     
 class GraphDataset():  
+    """
+    Data set for managing graph instances.
+    The splitted data of an anomaly data set is internally transformed to graphs.
+    All interactions with graphs are done via this class or its created batch loaders.
+    """
     
     def __init__(self, train_data, valid_data=[], test_data=[], graph_dataset_config={}):
         

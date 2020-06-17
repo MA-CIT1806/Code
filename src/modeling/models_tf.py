@@ -17,6 +17,11 @@ CUDA_1 = "cuda:1"
 ##############################################
 ##############################################
 class ProposalRL(nn.Module):
+    """
+    Proposed adaption of the model architecture for representation learning.
+    Utilizes node prediction tasks.
+    """
+
     def __init__(self, args):
         super(ProposalRL, self).__init__()
 
@@ -123,6 +128,11 @@ class ProposalRL(nn.Module):
 ##############################################
 ##############################################
 class ProposalRLLL(nn.Module):
+    """
+    Fine-tuning the pre-trained representation learning model with just a single linear layer.
+    All other weights are fixed.
+    """
+
     def __init__(self, args):
         super(ProposalRLLL, self).__init__()
         
@@ -164,6 +174,12 @@ class ProposalRLLL(nn.Module):
         return F.log_softmax(x, dim=1)
 ############################################################################
 class ProposalRLGRU(nn.Module):
+    """
+    Fine-tuning the pre-trained representation learning model with a GRU followed by a linear layer.
+    All other weights are fixed.
+    Requires model sharding.
+    """
+
     def __init__(self, args):
         super(ProposalRLGRU, self).__init__()
         
@@ -222,6 +238,10 @@ class ProposalRLGRU(nn.Module):
 ################## SUB-MODULES FOR TF #################################
 #######################################################################
 class SubModule1(nn.Module):
+    """
+    Main sub module to prevent code duplication.
+    """
+
     def __init__(self, args):
         super(SubModule1, self).__init__()
         
@@ -302,6 +322,10 @@ class SubModule1(nn.Module):
         return x
     
 class SubModule2(nn.Module):
+    """
+    Sub module for utilization of a GRU.
+    """
+
     def __init__(self, args):
         super(SubModule2, self).__init__()
         

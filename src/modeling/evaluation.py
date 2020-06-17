@@ -6,10 +6,10 @@ import pandas as pd
 import seaborn as sn
 from datetime import datetime
 from sklearn.metrics import confusion_matrix
-from src.utils import create_dir, rename_dir
 
 
 def create_confusion_matrix(y_true, y_pred, class_names, figsize=(10, 7), title=""):
+    """Given true labels and predicted labels, create a confusion matrix. Used during tensorboard-logging."""
     
     class_names = list(class_names)
     available_classes = np.unique(np.concatenate([y_true, y_pred], axis=None))
@@ -27,6 +27,8 @@ def create_confusion_matrix(y_true, y_pred, class_names, figsize=(10, 7), title=
 
 
 def create_temporal_softmax_data(y_true, y_pred_raw, mapping):
+    """Creates a visualization of the development of log-probabilities over time. Used during tensorboard-logging."""
+
     my_dict = {}
     for i, label in enumerate(mapping.values()):
         indices = y_true == i
@@ -51,6 +53,7 @@ def plot_confusion_matrix(*args, **kwargs):
 
 
 def plot_metric_lines(x, y, figsize=(16, 8), title="placeholder", xlabel="Epochs", ylabel=""):
+    """Plot multiple metrics in one graphic."""
     plt.figure(figsize=figsize)
     plt.title(title)
     for key, value in y.items():

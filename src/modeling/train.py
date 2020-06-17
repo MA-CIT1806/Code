@@ -7,6 +7,8 @@ import src.preparation.datasets_helpers as dh_helpers
 
 
 class MyBatch():
+    """Data wrapper, only necessary if extraction_target == 'sequence', i.e. a RNN is utilized."""
+
     def __init__(self, x=None, y=None, edge_index=None, batch=None, num_nodes=None, device=None):
         self.x = x[0].to(device)
         self.y = y[0].to(device)
@@ -25,6 +27,8 @@ def transform_batch(extraction_target, batch, device):
 def create_supervised_trainer(model, optimizer, loss_fn,
                               device=None, non_blocking=False, extraction_target="window",
                               output_transform=lambda x, y, y_pred, loss: loss.item()):
+    """Adapted code from Ignite-Library in order to allow for handling of graphs."""
+
 
     def _update(engine, batch):
         batch = transform_batch(extraction_target, batch, device)
@@ -35,6 +39,7 @@ def create_supervised_trainer(model, optimizer, loss_fn,
         loss = loss_fn(response, batch.y)
         loss.backward()
 
+        # gradient clipping, helpful if a RNN is utilized. Ideally, this prevents exploding gradients.
         torch.nn.utils.clip_grad_norm_(model.parameters(), 0.5)
 
         optimizer.step()
@@ -47,6 +52,8 @@ def create_supervised_evaluator(model, metrics=None,
                                 device=None, non_blocking=False,
                                 pred_collector_function=None, extraction_target="window",
                                 output_transform=lambda x, y, y_pred: (y_pred, y,)):
+    """Adapted code from Ignite-Library in order to allow for handling of graphs."""
+
     metrics = metrics or {}
 
     def _inference(engine, batch):

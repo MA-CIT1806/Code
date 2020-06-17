@@ -19,6 +19,7 @@ class LeaveOneGroupOutWrapper:
         if all_but_one_group_indices is None or left_out_group_indices is None:
             return None, None
         
+        # preprocess all data based on training data
         self.dataset.set_transform(all_but_one_group_indices, data_transform_steps=data_transform_steps)
         
         return AnomalySubset(self.dataset, all_but_one_group_indices), AnomalySubset(self.dataset, left_out_group_indices)
@@ -60,6 +61,7 @@ class TransferLearningWrapper:
                 
         print("Train and validation indices: {} \n Test indices: {}".format(all_but_one_group_indices, left_out_group_indices)) 
             
+        # preprocess all data based on training data
         self.dataset.set_transform(list(range(len(data_list))), data_transform_steps=data_transform_steps)        
         
         return AnomalySubset(self.dataset, all_but_one_group_indices), AnomalySubset(self.dataset, left_out_group_indices)    

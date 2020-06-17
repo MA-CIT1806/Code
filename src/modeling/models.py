@@ -12,6 +12,11 @@ from src.modeling.layers import *
 
 
 class GIN(nn.Module):
+    """
+    Model for comparison on graph classification tasks.
+    Corresponding paper: https://arxiv.org/abs/1810.00826
+    """
+
     def __init__(self, args):
         super(GIN, self).__init__()
         
@@ -63,6 +68,11 @@ class GIN(nn.Module):
         return F.log_softmax(x, dim=-1)
 ##############################################
 class GCN(torch.nn.Module):
+    """
+    Model for comparison on graph classification tasks.
+    Corresponding paper: https://arxiv.org/abs/1609.02907
+    """
+
     def __init__(self, args):
         super(GCN, self).__init__()
         
@@ -114,6 +124,11 @@ class GCN(torch.nn.Module):
 ##############################################
 ##############################################
 class Proposal(nn.Module):
+    """
+    Proposed model architecture of thesis.
+    Exploits both the spatial and temporal dimension.
+    """
+
     def __init__(self, args):
         super(Proposal, self).__init__()
 
@@ -219,6 +234,13 @@ class Proposal(nn.Module):
 ###############################################
 ###############################################    
 class AttentionBlock(nn.Module):
+    """
+    Scalable attention blocks. Combines TAGCN, GAT and JK.
+    TAGCN exploits the spatial dimension with the help of the adjacency matrix.
+    GAT exploits the spatial dimension by performing attention mechanisms on node features.
+    Finally, JK learns a weighted combination of graph layer outputs.
+    """
+
     def __init__(self, 
                  in_channels,
                  out_channels,
@@ -268,6 +290,9 @@ class AttentionBlock(nn.Module):
         return x
         
 class FinalFeedForward(nn.Module):
+    """
+    Simple feed-forward network. Utilizes two linear layer and dropout in between.
+    """
     
     def __init__(self, num_hidden, num_flex, dropout=0.5):
         super(FinalFeedForward, self).__init__()
@@ -331,7 +356,8 @@ class SublayerConnection(nn.Module):
         return self.norm(x + layer_out)
 ###########################################################
 ###########################################################
-    
+##### helper functions for local pooling operations #######    
+
 def apply_sag_pooling(instance, x, edge_index, batch):
     x, edge_index, _, batch,_, _ = instance(x, edge_index, batch=batch)
     return x, edge_index, batch

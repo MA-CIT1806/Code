@@ -9,6 +9,8 @@ from src.preparation.datasets import AnomalyDataset
 
 
 def _get_mappings(data_root_path, exclude_nodes=None, exclude_anomalies=None):
+    """Returns a mapping of anomalies to nodes and a mapping of nodes to anomalies."""
+
     exclude_nodes = [] if exclude_nodes is None else exclude_nodes
     exclude_anomalies = [] if exclude_anomalies is None else exclude_anomalies
 
@@ -51,22 +53,13 @@ def _get_file_paths(data_root_path, node2anomalies):
     return node2filepaths
 
 
-def read_dataset_vms_grouped(data_root_path, exclude_nodes=None, exclude_anomalies=None, group_pattern="", connection_type="fully"):
-
-    nodegroup2filepaths = read_nodegroup_2_filepaths(
-        data_root_path, exclude_nodes, exclude_anomalies, group_pattern)
-
-    # Create anomaly dataset for each node
-    datasets = {}
-    for node_group, filepaths in nodegroup2filepaths.items():
-        root = os.path.join(data_root_path, "..", "datasets", node_group)
-        datasets[node_group] = AnomalyDataset(root, filepaths)
-
-    return datasets
-
-
 # Creates anomaly dataset in which
 def read_nodegroup_2_filepaths(data_root_path, exclude_nodes=None, exclude_anomalies=None, group_pattern=""):
+    """
+    Creates a dictionary of file paths, where the keys are the respective service components,
+    and the values are the corresponding file paths, i.e. paths describing the location of data belonging to a node.
+    """
+
     _, node2anomalies = _get_mappings(
         data_root_path, exclude_nodes, exclude_anomalies)
     node2filepaths = _get_file_paths(data_root_path, node2anomalies)
@@ -86,6 +79,8 @@ def read_nodegroup_2_filepaths(data_root_path, exclude_nodes=None, exclude_anoma
 
 
 def load_datasets(node_names, data_path, exclude_anomalies=None):
+    """Given a list of service components (nodes), load the data for each node."""
+
     nodegroup2filepaths = read_nodegroup_2_filepaths(data_path)
     
     datasets = []
