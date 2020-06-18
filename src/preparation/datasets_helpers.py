@@ -84,23 +84,24 @@ def read_data(node_name, anomaly_file_paths, pattern, ref_header, exclude_anomal
             target_label_dict[anomaly] = len(list(target_label_dict.keys()))
 
     for anomaly, file_paths in anomaly_file_paths.items():
-        for file_path in file_paths:
-            file_prefix = re.findall(pattern, os.path.basename(file_path))
-            if not file_prefix:
-                raise ValueError("Illegal file name {}. Files are expected to have a number as prefix."
-                                 .format(file_path))
-            if ref_header is not None:
-                csv_data = pd.read_csv(file_path, usecols=ref_header).drop(
-                    ["time", "tags"], axis=1)
-            else:
-                csv_data = pd.read_csv(file_path).drop(
-                    ["time", "tags"], axis=1)
-            data.append(RawData(
-                x=csv_data.values,
-                headers=list(csv_data.columns),
-                y=target_label_dict[anomaly],
-                anomaly_name=anomaly,
-                node_name=node_name))
+        if anomaly not in exclude_anomalies:
+            for file_path in file_paths:
+                file_prefix = re.findall(pattern, os.path.basename(file_path))
+                if not file_prefix:
+                    raise ValueError("Illegal file name {}. Files are expected to have a number as prefix."
+                                     .format(file_path))
+                if ref_header is not None:
+                    csv_data = pd.read_csv(file_path, usecols=ref_header).drop(
+                        ["time", "tags"], axis=1)
+                else:
+                    csv_data = pd.read_csv(file_path).drop(
+                        ["time", "tags"], axis=1)
+                data.append(RawData(
+                    x=csv_data.values,
+                    headers=list(csv_data.columns),
+                    y=target_label_dict[anomaly],
+                    anomaly_name=anomaly,
+                    node_name=node_name))
 
     return data, dict([(value, key) for key, value in target_label_dict.items()])
 

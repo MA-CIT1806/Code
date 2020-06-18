@@ -98,7 +98,7 @@ class ClassificationPipeline():
 
         return model, optimizer
 
-    def _prepare_trained_model(self, model, optimizer):
+    def _prepare_trained_model(self, model, optimizer, device):
         """Load a model from checkpoint."""
 
         additional_parameters = None
@@ -106,6 +106,8 @@ class ClassificationPipeline():
         if isinstance(model, Proposal):
             model, optimizer = self._load_checkpoint(
                 model, optimizer, torch.load(self.trained_model_checkpoint))
+
+            model.to(device)
 
             for param in model.parameters():
                 param.requires_grad = False
@@ -173,7 +175,8 @@ class ClassificationPipeline():
         # load model from checkpoint if available
         if self.trained_model_checkpoint is not None:
             self.custom_print("load transfer-learning checkpoint...")
-            model, optimizer = self._prepare_trained_model(model, optimizer)
+            model, optimizer = self._prepare_trained_model(
+                model, optimizer, device)
 
         loss = self.loss_class()
 
@@ -331,7 +334,7 @@ class ClassificationPipeline():
 
         # terminate training if Nan values are produced
         trainer.add_event_handler(Events.ITERATION_COMPLETED, TerminateOnNan())
-        
+
         # create tensorboard-logger
         tb_logger = create_tb_logger(model,
                                      optimizer,
