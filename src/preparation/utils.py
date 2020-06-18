@@ -88,5 +88,10 @@ def load_datasets(node_names, data_path, exclude_anomalies=None):
         anomaly_file_paths = nodegroup2filepaths[node_name]
         datasets.append(AnomalyDataset(node_name, anomaly_file_paths=anomaly_file_paths, exclude_anomalies=exclude_anomalies))
   
+
+    # make sure all datasets have same number of classes
+    if len(set([d.num_classes for d in datasets])) != 1:
+        raise ValueError("datasets have varying number of classes.")
+
     return datasets
 
